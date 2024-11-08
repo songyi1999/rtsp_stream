@@ -34,6 +34,18 @@ docker run -d \
 -p 9999:9999 \
 rtsp-stream
 ```
+(3.拉取镜像 可选)
+```
+docker pull songyi1999/rtsp-stream:latest
+
+docker run -d \
+--name rtsp-stream \
+-p 8000:8000 \
+-p 9999:9999 \
+songyi1999/rtsp-stream:latest
+```
+
+
 ### 本地部署
 
 1. 安装依赖:
