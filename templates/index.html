@@ -122,7 +122,19 @@ Content-Type: application/json
             // 停止现有的播放器
             if (player) {
                 player.destroy();
+                player = null;
             }
+
+            // 获取视频容器
+            const videoContainer = document.querySelector('.video-container');
+            
+            // 创建新的 canvas
+            const newCanvas = document.createElement('canvas');
+            newCanvas.id = 'canvas';
+            
+            // 清空容器并添加新的 canvas
+            videoContainer.innerHTML = '';
+            videoContainer.appendChild(newCanvas);
 
             // 发送开始流请求
             fetch('http://localhost:8866/start', {
@@ -137,7 +149,7 @@ Content-Type: application/json
                 console.log('Stream started:', result);
                 // 创建新的播放器
                 player = new JSMpeg.Player('ws://localhost:9988', {
-                    canvas: document.getElementById('canvas')
+                    canvas: newCanvas
                 });
                 
                 // 自动开始心跳
@@ -154,6 +166,19 @@ Content-Type: application/json
                 player.destroy();
                 player = null;
             }
+            
+            // 清空视频容器
+            const videoContainer = document.querySelector('.video-container');
+            videoContainer.innerHTML = '<canvas id="canvas"></canvas>';
+            
+            // 调用后端 stop 接口
+            fetch('http://localhost:8866/stop', {
+                method: 'POST'
+            })
+            .then(response => response.text())
+            .then(result => console.log('Stream stopped:', result))
+            .catch(error => console.error('Stop stream error:', error));
+            
             stopHeartbeat();
         }
 
