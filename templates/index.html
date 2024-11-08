@@ -25,44 +25,55 @@
         async function startStream() {
             const rtspUrl = document.getElementById('rtspUrl').value;
             
-            // 调用后端接口启动流
-            const response = await fetch('/stream/start', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    rtsp_url: rtspUrl,
-                    ws_port: wsPort
-                })
-            });
-            
-            const data = await response.json();
-            if (data.status === 'success') {
-                // 连接WebSocket流
-                player = new JSMpeg.Player(data.ws_url, {
-                    canvas: document.getElementById('canvas')
-                });
-            } else {
-                alert('启动失败: ' + data.error);
-            }
-        }
-
-        async function stopStream() {
-            if (player) {
-                // 调用后端接口停止流
-                await fetch('/stream/stop', {
+            try {
+                const response = await fetch('/stream/start', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
+                        rtsp_url: rtspUrl,
                         ws_port: wsPort
                     })
                 });
                 
-                player.destroy();
-                player = null;
+                const data = await response.json();
+                if (data.status === 'success') {
+                    console.log('连接WebSocket:', data.ws_url);
+                    player = new JSMpeg.Player(data.ws_url, {
+                        canvas: document.getElementById('canvas')
+                    });
+                } else {
+                    alert('启动失败: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('请求失败: ' + error.message);
+            }
+        }
+
+        async function stopStream() {
+            if (player) {
+                try {
+                    const response = await fetch('/stream/stop', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            ws_port: wsPort
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        player.destroy();
+                        player = null;
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('停止失败: ' + error.message);
+                }
             }
         }
     </script>
