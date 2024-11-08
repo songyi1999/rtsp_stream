@@ -46,6 +46,13 @@ API接口：
    # 启动服务
    node server-with-static.js
    ```
+3.直接拉取镜像
+   ```bash
+   docker pull songyi1999/rtsp-stream
+
+   # 运行容器
+   docker run -d -p 8866:8866 -p 9988:9988 songyi1999/rtsp-stream
+   ```
 
 使用方法：
 

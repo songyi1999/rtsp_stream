@@ -32,8 +32,14 @@ function start(rtspUrl) {
             '-r': 50, // options with required values specify the value after the key
       '-s':'850x566',
     //   '-s': '1024x768',
-      // '-an': '',
-      '-rtsp_transport': 'tcp'
+      '-an': '',
+      '-analyzeduration': '20M',
+            '-probesize': '20M',
+            '-rtsp_transport': 'tcp'
+            
+
+         
+    
         }
     })
 
