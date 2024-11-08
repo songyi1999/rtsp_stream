@@ -44,7 +44,7 @@ API接口：
    npm install
 
    # 启动服务
-   node server.js
+   node server-with-static.js
    ```
 
 使用方法：
