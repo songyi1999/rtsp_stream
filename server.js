@@ -1,44 +1,91 @@
 const http = require('http')
 const url = require('url')
 const Stream = require('node-rtsp-stream')
-let stream, tm
-function start(ip) {
+
+let stream
+let lastHeartbeat = Date.now()
+let heartbeatTimer
+
+function start(rtspUrl) {
+  // 关闭现有流
+  stop()
+  
+  // 启动新流
   stream = new Stream({
-    name: 'name',
-    streamUrl: 'rtsp://admin:a1234567@' + ip + ':554/h265/ch1/main/av_stream',
+    name: 'stream',
+    streamUrl: rtspUrl,
     wsPort: 9988,
-    ffmpegOptions: { // options ffmpeg flags
-      // '-nostats': '', // an option with no neccessary value uses a blank string
-      '-r': 50, // options with required values specify the value after the key
-      // '-s':'850x566',
+    ffmpegOptions: {
+      '-r': 50,
       '-s': '1024x768',
-      // '-an': '',
       '-rtsp_transport': 'tcp'
     }
   })
 
-  watch()
+  // 启动心跳检测
+  startHeartbeatCheck()
 }
-// 客户关闭后退出
-function watch() {
-  // clearInterval(tm)
-  // tm = setInterval(() => {
-  //   stop()
-  // }, 1000 * 30)
-}
+
 function stop() {
-  if (stream) { stream.stop() }
-}
-var server = http.createServer(function (req, res) {
-  const query = url.parse(req.url, true).query
-  if (query.stop) {
-    stop()
-  } else if (query.ip) {
-    stop()
-    start(query.ip)
-  } else if (query.watch) {
-    watch()
+  if (stream) {
+    stream.stop()
+    stream = null
   }
-  res.end('ok')
+}
+
+function startHeartbeatCheck() {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer)
+  }
+  
+  heartbeatTimer = setInterval(() => {
+    // 检查是否超过10分钟没有心跳
+    if (Date.now() - lastHeartbeat > 10 * 60 * 1000) {
+      stop()
+      clearInterval(heartbeatTimer)
+    }
+  }, 30 * 1000) // 每30秒检查一次
+}
+
+const server = http.createServer((req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
+  
+  // 处理心跳请求
+  if (req.method === 'GET' && req.url === '/heartbeat') {
+    lastHeartbeat = Date.now()
+    res.end('ok')
+    return
+  }
+  
+  // 处理流启动请求
+  if (req.method === 'POST' && req.url === '/start') {
+    let body = ''
+    req.on('data', chunk => {
+      body += chunk.toString()
+    })
+    req.on('end', () => {
+      try {
+        const { rtspUrl } = JSON.parse(body)
+        if (!rtspUrl) {
+          res.statusCode = 400
+          res.end('Missing rtspUrl parameter')
+          return
+        }
+        start(rtspUrl)
+        res.end('Stream started')
+      } catch (e) {
+        res.statusCode = 400
+        res.end('Invalid JSON')
+      }
+    })
+    return
+  }
+
+  res.statusCode = 404
+  res.end('Not found')
 })
-server.listen(8866)
+
+server.listen(8866, () => {
+  console.log('Server running on port 8866')
+})

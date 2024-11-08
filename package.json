@@ -1,12 +1,25 @@
 {
-    "name": "rtsp-ws-stream",
-    "version": "1.0.0",
-    "description": "RTSP to WebSocket streaming service",
-    "main": "main.py",
-    "scripts": {
-    "start": "uvicorn main:app --host 0.0.0.0 --port 8000"
-    },
-    "dependencies": {
-    "jsmpeg": "^1.0.0"
-    }
-    }
+  "name": "rtspstream",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "jsmpeg": "^1.0.0",
+    "node-rtsp-stream": "^0.0.9",
+    "ws": "^7.5.10"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/songyi1999/rtsp_stream.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/songyi1999/rtsp_stream/issues"
+  },
+  "homepage": "https://github.com/songyi1999/rtsp_stream#readme"
+}
