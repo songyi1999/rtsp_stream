@@ -27,9 +27,26 @@ function start(rtspUrl) {
         streamUrl: rtspUrl,
         wsPort: 9988,
         ffmpegOptions: {
-            '-r': 50,
-            '-s': '1024x768',
-            '-rtsp_transport': 'tcp'
+            // '-r': 50,
+            // '-s': '1024x768',
+            
+            '-rtsp_transport': 'tcp',        // 强制使用 TCP
+            '-stimeout': '30000000',         // 设置超时时间
+            '-analyzeduration': '15000000',  // 增加分析时间
+            '-probesize': '15000000',        // 增加探测大小
+            '-bufsize': '5000k',             // 增加缓冲区大小
+            '-i': rtspUrl,
+            '-r': 25,                        // 帧率
+            '-q': 0,                         // 质量参数
+            '-f': 'mpegts',                  // 输出格式
+            '-codec:v': 'mpeg1video',        // 视频编码
+            '-b:v': '1000k',                 // 视频比特率
+            '-bf': 0,                        // 禁用 B 帧
+            '-codec:a': 'mp2',               // 音频编码
+            '-ar': 44100,                    // 音频采样率
+            '-ac': 1,                        // 音频通道数
+            '-b:a': '128k',                  // 音频比特率
+            '-muxdelay': 0.1                 // 降低延迟
         }
     })
 
