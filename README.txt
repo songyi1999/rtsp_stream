@@ -14,12 +14,15 @@ RTSP to WebSocket 流媒体转换服务
 
 API接口：
 1. 启动/切换视频流
-   POST http://localhost:8866/start
+   POST http://<your-domain>:8866/start
    Content-Type: application/json
    Body: {"rtspUrl": "rtsp://your-rtsp-url"}
 
 2. 心跳维持（每10分钟至少一次）
-   GET http://localhost:8866/heartbeat
+   GET http://<your-domain>:8866/heartbeat
+
+3. 停止视频流
+   POST http://<your-domain>:8866/stop
 
 使用要求：
 - Node.js 14+
@@ -46,7 +49,8 @@ API接口：
    # 启动服务
    node server-with-static.js
    ```
-3.直接拉取镜像
+
+3. 直接拉取镜像
    ```bash
    docker pull songyi1999/rtsp-stream
 
@@ -57,7 +61,7 @@ API接口：
 使用方法：
 
 1. Web界面使用（推荐）：
-   - 访问 http://localhost:8866
+   - 访问 http://<your-domain>:8866
    - 在输入框中填入RTSP地址
    - 点击"开始播放"按钮开始播放
    - 点击"发送心跳"维持播放（也可以自动发送）
@@ -66,12 +70,15 @@ API接口：
 2. API调用：
    ```bash
    # 启动流
-   curl -X POST "http://localhost:8866/start" \
+   curl -X POST "http://<your-domain>:8866/start" \
    -H "Content-Type: application/json" \
    -d '{"rtspUrl": "rtsp://username:password@ip:port/stream"}'
 
    # 发送心跳
-   curl "http://localhost:8866/heartbeat"
+   curl "http://<your-domain>:8866/heartbeat"
+
+   # 停止流
+   curl -X POST "http://<your-domain>:8866/stop"
    ```
 
 注意事项：
@@ -79,6 +86,7 @@ API接口：
 2. 需要每10分钟发送一次心跳，否则服务器将自动停止转码
 3. 开始新的流会自动关闭之前的流
 4. 确保Docker环境或本地环境已安装FFmpeg
+5. 默认视频帧率为15fps，可通过修改配置调整
 
 项目结构：
 ├── server.js            # 主服务器文件
@@ -100,10 +108,12 @@ API接口：
 2. 如果视频延迟较大：
    - 可以尝试调整FFmpeg参数
    - 检查网络带宽是否足够
+   - 考虑降低视频帧率
 
 3. 如果无法访问Web界面：
    - 确认8866端口是否正确映射
    - 检查防火墙设置
+   - 确认域名解析是否正确
 
 技术支持：
 - 项目地址：https://github.com/songyi1999/rtsp_stream
