@@ -31,7 +31,7 @@ function start(rtspUrl) {
         ffmpegOptions: {
             '-r': 50, // options with required values specify the value after the key
       '-s':'850x566',
-    //   '-s': '1024x768',
+        
       '-an': '',
       '-analyzeduration': '20M',
             '-probesize': '20M',

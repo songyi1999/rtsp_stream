@@ -86,7 +86,7 @@
         
         <h3>1. 开始/切换视频流</h3>
         <pre>
-POST http://localhost:8866/start
+POST start
 Content-Type: application/json
 
 {
@@ -94,7 +94,7 @@ Content-Type: application/json
 }</pre>
 
         <h3>2. 心跳维持（每10分钟至少一次）</h3>
-        <pre>GET http://localhost:8866/heartbeat</pre>
+        <pre>GET heartbeat</pre>
 
         <h3>3. WebSocket连接</h3>
         <pre>ws://localhost:9988</pre>
@@ -137,7 +137,7 @@ Content-Type: application/json
             videoContainer.appendChild(newCanvas);
 
             // 发送开始流请求
-            fetch('http://localhost:8866/start', {
+            fetch('start', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -147,8 +147,11 @@ Content-Type: application/json
             .then(response => response.text())
             .then(result => {
                 console.log('Stream started:', result);
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsHost = window.location.hostname;
+        const wsUrl = `${wsProtocol}//${wsHost}:9988`;
                 // 创建新的播放器
-                player = new JSMpeg.Player('ws://localhost:9988', {
+                player = new JSMpeg.Player(wsUrl, {
                     canvas: newCanvas
                 });
                 
@@ -172,7 +175,7 @@ Content-Type: application/json
             videoContainer.innerHTML = '<canvas id="canvas"></canvas>';
             
             // 调用后端 stop 接口
-            fetch('http://localhost:8866/stop', {
+            fetch('stop', {
                 method: 'POST'
             })
             .then(response => response.text())
@@ -201,7 +204,7 @@ Content-Type: application/json
         }
 
         function sendHeartbeat() {
-            fetch('http://localhost:8866/heartbeat')
+            fetch('heartbeat')
                 .then(response => response.text())
                 .then(result => console.log('Heartbeat sent:', result))
                 .catch(error => console.error('Heartbeat error:', error));
