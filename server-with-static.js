@@ -6,6 +6,19 @@ const path = require('path')
 
 const app = express()
 
+// 添加 CORS 中间件
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+    
+    // 处理 OPTIONS 预检请求
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200)
+    }
+    next()
+})
+
 // 设置静态文件服务
 app.use('/static', express.static(path.join(__dirname, 'static')))
 app.use(express.json())
