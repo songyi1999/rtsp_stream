@@ -6,13 +6,12 @@ const path = require('path')
 
 const app = express()
 
-// 添加 CORS 中间件
+// CORS中间件
 app.use((req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*')
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
     
-    // 处理 OPTIONS 预检请求
     if (req.method === 'OPTIONS') {
         return res.sendStatus(200)
     }
@@ -38,21 +37,14 @@ function start(rtspUrl) {
     stream = new Stream({
         name: 'stream',
         streamUrl: rtspUrl,
-// streamUrl:'rtsp://153.37.220.211:8604/EUrl/1SB45Py?params=eyJwcm90b2NvbCI6InJ0c3AiLCJleHBhbmQiOiJzdHJlYW1mb3JtPXJ0cCIsInQiOjEsImEiOiIzMjA1ODIxMTU4MTMxNDAwMDk5MXwyfDB8MXxvcGVuX2FwaSJ9',
-
         wsPort: 9988,
         ffmpegOptions: {
-            '-r': 50, // options with required values specify the value after the key
-      '-s':'850x566',
-        
-      '-an': '',
-      '-analyzeduration': '20M',
+            '-r': 50,
+            '-s': '850x566',
+            '-an': '',
+            '-analyzeduration': '20M',
             '-probesize': '20M',
             '-rtsp_transport': 'tcp'
-            
-
-         
-    
         }
     })
 
@@ -100,7 +92,7 @@ app.post('/start', (req, res) => {
     res.send('Stream started')
 })
 
-// 启动服务器
-const server = app.listen(8866, () => {
-    console.log('Server running on port 8866')
+// 启动 HTTP 服务器
+app.listen(8866, () => {
+    console.log('HTTP Server running on port 8866')
 }) 

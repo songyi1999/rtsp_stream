@@ -38,7 +38,10 @@ API接口：
    docker build -t rtsp-stream .
 
    # 运行容器
-   docker run -d -p 8866:8866 -p 9988:9988 rtsp-stream
+   docker run -d \
+     -p 8866:8866 \
+     -p 9988:9988 \
+     rtsp-stream
    ```
 
 2. 本地部署：
@@ -48,14 +51,6 @@ API接口：
 
    # 启动服务
    node server-with-static.js
-   ```
-
-3. 直接拉取镜像
-   ```bash
-   docker pull songyi1999/rtsp-stream
-
-   # 运行容器
-   docker run -d -p 8866:8866 -p 9988:9988 songyi1999/rtsp-stream
    ```
 
 使用方法：
@@ -86,7 +81,162 @@ API接口：
 2. 需要每10分钟发送一次心跳，否则服务器将自动停止转码
 3. 开始新的流会自动关闭之前的流
 4. 确保Docker环境或本地环境已安装FFmpeg
-5. 默认视频帧率为15fps，可通过修改配置调整
+5. 确保防火墙开放8866和9988端口
+
+# Nginx 配置说明
+
+## 1. Windows 安装 Nginx：
+1. 下载 Nginx
+   - 访问 http://nginx.org/en/download.html
+   - 下载最新稳定版本（如：nginx-1.24.0.zip）
+   - 解压到指定目录（如：C:\nginx）
+
+2. 启动和管理 Nginx
+   ```bash
+   # 启动 Nginx
+   start nginx
+
+   # 停止 Nginx
+   nginx -s stop
+
+   # 重新加载配置
+   nginx -s reload
+
+   # 测试配置文件语法
+   nginx -t
+   ```
+
+## 2. SSL 证书配置：
+1. 在 Nginx 目录下创建 ssl 文件夹：
+   ```bash
+   mkdir C:\nginx\ssl
+   ```
+
+2. 将 SSL 证书文件放入 ssl 文件夹：
+   - rtsp.xinpanmen.com_bundle.pem
+   - rtsp.xinpanmen.com.key
+
+## 3. Nginx 配置文件（C:\nginx\conf\nginx.conf）：
+```nginx
+worker_processes  1;
+
+events {
+    worker_connections  1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+    keepalive_timeout  65;
+
+    # HTTPS 服务器配置
+    server {
+        listen       443 ssl;
+        server_name  rtsp.xinpanmen.com;
+
+        # SSL证书配置
+        ssl_certificate      C:/nginx/ssl/rtsp.xinpanmen.com_bundle.pem;
+        ssl_certificate_key  C:/nginx/ssl/rtsp.xinpanmen.com.key;
+
+        # SSL配置
+        ssl_session_cache    shared:SSL:1m;
+        ssl_session_timeout  5m;
+        ssl_protocols TLSv1.2 TLSv1.3;
+        ssl_ciphers  HIGH:!aNULL:!MD5;
+        ssl_prefer_server_ciphers  on;
+
+        # 反向代理 HTTP 请求
+        location / {
+            proxy_pass http://localhost:8866;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        # 反向代理 WebSocket
+        location /ws {
+            proxy_pass http://localhost:9988;
+            proxy_http_version 1.1;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+            proxy_set_header Host $host;
+        }
+    }
+
+    # HTTP 重定向到 HTTPS
+    server {
+        listen       80;
+        server_name  rtsp.xinpanmen.com;
+        return 301 https://$server_name$request_uri;
+    }
+}
+```
+
+## 4. 系统配置：
+1. 修改 hosts 文件（C:\Windows\System32\drivers\etc\hosts）：
+   ```
+   127.0.0.1 rtsp.xinpanmen.com
+   ```
+
+2. 开放防火墙端口：
+   - 80 (HTTP)
+   - 443 (HTTPS)
+   - 8866 (Node.js 服务)
+   - 9988 (WebSocket)
+
+## 5. 完整部署流程：
+1. 安装并配置 Nginx
+   ```bash
+   # 下载并解压 Nginx
+   # 配置 SSL 证书
+   # 修改 nginx.conf
+   # 启动 Nginx
+   start nginx
+   ```
+
+2. 启动 Node.js 服务
+   ```bash
+   # 安装依赖
+   npm install
+
+   # 启动服务
+   node server-with-static.js
+   ```
+
+3. 验证服务
+   - 访问 https://rtsp.xinpanmen.com
+   - 测试 RTSP 流播放
+   - 确认 WebSocket 连接正常
+
+## 6. 维护和故障排查：
+1. 查看 Nginx 日志：
+   - 访问日志：C:\nginx\logs\access.log
+   - 错误日志：C:\nginx\logs\error.log
+
+2. 常见问题处理：
+   - 502 Bad Gateway：检查 Node.js 服务是否正常运行
+   - SSL 证书错误：检查证书文件路径和权限
+   - WebSocket 连接失败：检查 Nginx 配置和防火墙设置
+
+3. 证书更新：
+   - 替换 ssl 目录下的证书文件
+   - 重新加载 Nginx 配置：nginx -s reload
+
+4. 服务重启流程：
+   ```bash
+   # 停止 Nginx
+   nginx -s stop
+   
+   # 停止 Node.js 服务
+   # 使用任务管理器或命令行关闭 node 进程
+   
+   # 启动 Node.js 服务
+   node server-with-static.js
+   
+   # 启动 Nginx
+   start nginx
+   ```
 
 项目结构：
 ├── server.js            # 主服务器文件
