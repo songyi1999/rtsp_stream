@@ -2,7 +2,6 @@ const express = require('express')
 const http = require('http')
 const url = require('url')
 const Stream = require('node-rtsp-stream')
-const path = require('path')
 
 const app = express()
 
@@ -18,13 +17,27 @@ app.use((req, res, next) => {
     next()
 })
 
-// 设置静态文件服务
-app.use('/static', express.static(path.join(__dirname, 'static')))
 app.use(express.json())
 
-// 设置首页
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'templates', 'index.html'))
+// API路由
+app.post('/start', (req, res) => {
+    const { rtspUrl } = req.body
+    if (!rtspUrl) {
+        res.status(400).send('Missing rtspUrl parameter')
+        return
+    }
+    start(rtspUrl)
+    res.send('Stream started')
+})
+
+app.get('/heartbeat', (req, res) => {
+    lastHeartbeat = Date.now()
+    res.send('ok')
+})
+
+app.post('/stop', (req, res) => {
+    stop()
+    res.send('Stream stopped')
 })
 
 let stream
@@ -70,27 +83,6 @@ function startHeartbeatCheck() {
         }
     }, 30 * 1000)
 }
-
-// API路由
-app.get('/heartbeat', (req, res) => {
-    lastHeartbeat = Date.now()
-    res.send('ok')
-})
-
-app.post('/stop', (req, res) => {
-    stop()
-    res.send('Stream stopped')
-})
-
-app.post('/start', (req, res) => {
-    const { rtspUrl } = req.body
-    if (!rtspUrl) {
-        res.status(400).send('Missing rtspUrl parameter')
-        return
-    }
-    start(rtspUrl)
-    res.send('Stream started')
-})
 
 // 启动 HTTP 服务器
 app.listen(8866, () => {

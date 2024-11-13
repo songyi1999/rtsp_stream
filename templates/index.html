@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="UTF-8" />
     <title>RTSP流播放器</title>
+
     <style>
       body {
         max-width: 1200px;
@@ -154,7 +156,8 @@ Content-Type: application/json
           .then((result) => {
             console.log("Stream started:", result);
             // 根据当前页面协议决定使用 ws 还是 wss
-            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsProtocol =
+              window.location.protocol === "https:" ? "wss:" : "ws:";
             const wsUrl = `${wsProtocol}//${window.location.host}/ws`;
 
             player = new JSMpeg.Player(wsUrl, {
