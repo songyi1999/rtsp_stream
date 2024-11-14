@@ -92,7 +92,7 @@
 
       <h3>1. 开始/切换视频流</h3>
       <pre>
-POST start
+POST /api/start
 Content-Type: application/json
 
 {
@@ -101,7 +101,7 @@ Content-Type: application/json
       >
 
       <h3>2. 心跳维持（每10分钟至少一次）</h3>
-      <pre>GET heartbeat</pre>
+      <pre>GET /api/heartbeat</pre>
 
       <h3>3. WebSocket连接</h3>
       <pre>ws://your-domain/ws 或 wss://your-domain/ws (取决于访问协议)</pre>
@@ -145,7 +145,7 @@ Content-Type: application/json
         videoContainer.appendChild(newCanvas);
 
         // 发送开始流请求
-        fetch("start", {
+        fetch("/api/start", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -183,7 +183,7 @@ Content-Type: application/json
         videoContainer.innerHTML = '<canvas id="canvas"></canvas>';
 
         // 调用后端 stop 接口
-        fetch("stop", {
+        fetch("/api/stop", {
           method: "POST",
         })
           .then((response) => response.text())
@@ -212,7 +212,7 @@ Content-Type: application/json
       }
 
       function sendHeartbeat() {
-        fetch("heartbeat")
+        fetch("/api/heartbeat")
           .then((response) => response.text())
           .then((result) => console.log("Heartbeat sent:", result))
           .catch((error) => console.error("Heartbeat error:", error));
